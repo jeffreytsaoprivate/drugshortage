@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drug shortage</title>
+  <style>
+    body {background-color: #D0D0D0; font-family: Arial, Helvetica, sans-serif;} 
+    p{margin:5px;}p.normal {font-weight: normal; font-size: 0.875em; color: black;}
+    p.light {font-weight: normal; font-size: 0.5em; color: grey;}
+    p.thick {font-weight: bold; font-size: 1em; color: black;}
+    p.small {font-weight: normal; font-size: 0.75em; color: grey;}
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      padding: 5px;
+      border: 1px solid #ddd;
+    }
+    th {
+      text-align: left;
+    }
+    .filter-select {
+      width: 100%;
+    }
+    .container {
+      background-color: #D0D0D0; 
+      display: grid; 
+      grid-auto-rows: auto-fit; 
+      grid-template-rows: auto; 
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+      gap: 10px; 
+    }
+    .tile {
+      border: 5px solid white; 
+      background-color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>Drug shortage</h1>
+ <div id="current-status"></div>
+  <table>
+    <tr>
+      <td><div data-name="parameter-drug"><B>Drug</B>&nbsp;</div></td>
+      <td><div data-name="parameter-format"><B>Format</B>&nbsp;</div></td>
+      <td><div data-name="parameter-availability"><B>Availability</B>&nbsp;</div></td>
+      <td><div data-name="parameter-essential"><B>Essential medicines</B>&nbsp;</div></td>
+      <td><div data-name="parameter-api_1"><B>API 1</B>&nbsp;</div></td>
+      <td><div data-name="parameter-api_2"><B>API 2</B>&nbsp;</div></td>
+    </tr>
+    <tr>
+      <td><div data-name="filters"><select id="filter-drug" multiple></select></div></td>
+      <td><div data-name="filters"><select id="filter-format" multiple></select></div></td>
+      <td><div data-name="filters"><select id="filter-availability" multiple></select></div></td>
+      <td><div data-name="filters"><select id="filter-essential"></select></div></td>
+    </tr>
+    <tr>
+    </tr>
+</div>  
+  </table>
+<div id="table-body" class='container'>
+</div>
+
+
+  <script>
+    const tableBody = document.getElementById('table-body');
+    //const filterOptions = document.getElementById('filter-options');
+    const filterOptions = document.querySelectorAll('[id^=filter-]');
+
+    let tableRows = [    
+{ drug: "0.9% Sodium Chloride Irrigation", format: "Solutions", availability: "Other presentation available", essential: "No", api_name1: "Sodium Chloride", api_1: 58.44, apismiles1: "[Na+].[Cl-]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "0.9% Sodium Chloride Large Volume Bags", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Sodium Chloride", api_1: 58.44, apismiles1: "[Na+].[Cl-]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "23.4% Sodium Chloride Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Sodium Chloride", api_1: 58.44, apismiles1: "[Na+].[Cl-]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "25% Dextrose Injection", format: "Simple injection", availability: "Not enough", essential: "No", api_name1: "Dextrose Monohydrate", api_1: 198.17, apismiles1: "C(C(C(C(C(C=O)O)O)O)O)O.O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "5% Dextrose Injection (PVC-free and DEHP-free)", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Dextrose Monohydrate", api_1: 198.17, apismiles1: "C(C(C(C(C(C=O)O)O)O)O)O.O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "5% Dextrose Injection Small Volume Bags", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Dextrose Monohydrate", api_1: 198.17, apismiles1: "C(C(C(C(C(C=O)O)O)O)O)O.O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "50% Dextrose Injection", format: "Simple injection", availability: "Not enough", essential: "No", api_name1: "Dextrose Monohydrate", api_1: 198.17, apismiles1: "C(C(C(C(C(C=O)O)O)O)O)O.O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "70% Dextrose Injection Large Volume Bags", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Dextrose Monohydrate", api_1: 198.17, apismiles1: "C(C(C(C(C(C=O)O)O)O)O)O.O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Acetylcholine Chloride Powder for Intraocular Solution", format: "Solutions", availability: "Nothing available", essential: "No", api_name1: "Acetylcholine Chloride", api_1: 181.66, apismiles1: "CC(=O)OCC[N+](C)(C)C.[Cl-]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Amifostine Injection", format: "Simple injection", availability: "Nothing available", essential: "No", api_name1: "Amifostine", api_1: 214.23, apismiles1: "C(CN)CNCCSP(=O)(O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Amino Acid Products", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Amino Acid", api_1: 0, apismiles1: "N/A", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Aminophylline Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Theophylline", api_1: 180.16, apismiles1: "CN1C2=C(C(=O)N(C1=O)C)NC=N2", api_name2: "ethylenediamine", api_2: 60.1, apismiles2: "C(CN)N" },
+{ drug: "Amobarbital Sodium Injection", format: "Simple injection", availability: "Nothing available", essential: "No", api_name1: "Amobarbital Sodium", api_1: 248.25, apismiles1: "CCC1(C(=O)NC(=NC1=O)[O-])CCC(C)C.[Na+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Bacteriostatic 0.9% Sodium Chloride Vials", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Sodium Chloride", api_1: 58.44, apismiles1: "[Na+].[Cl-]", api_name2: "Benzyl alcohol", api_2: 108.14, apismiles2: "C1=CC=C(C=C1)CO" },
+{ drug: "Betamethasone Acetate/Betamethasone Sodium Phosphate Suspension for Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Betamethasone Acetate", api_1: 434.5, apismiles1: "CC1CC2C3CCC4=CC(=O)C=CC4(C3(C(CC2(C1(C(=O)COC(=O)C)O)C)O)F)C", api_name2: "Betamethasone Sodium Phosphate", api_2: 516.4, apismiles2: "CC1CC2C3CCC4=CC(=O)C=CC4(C3(C(CC2(C1(C(=O)COP(=O)([O-])[O-])O)C)O)F)C.[Na+].[Na+]" },
+{ drug: "Bleomycin Sulfate Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Bleomycin Sulfate", api_1: 1415.6, apismiles1: "CC1=C(N=C(N=C1N)C(CC(=O)N)NCC(C(=O)N)N)C(=O)NC(C(C2=CN=CN2)OC3C(C(C(C(O3)CO)O)O)OC4C(C(C(C(O4)CO)O)OC(=O)N)O)C(=O)NC(C)C(C(C)C(=O)NC(C(C)O)C(=O)NCCC5=NC(=CS5)C6=NC(=CS6)C(=O)NCCC[S+](C)C)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Bupivacaine with Epinephrine Injection", format: "Simple injection", availability: "Nothing available", essential: "No", api_name1: "Bupivacaine", api_1: 288.4, apismiles1: "CCCCN1CCCCC1C(=O)NC2=C(C=CC=C2C)C", api_name2: "Epinephrine", api_2: 183.2, apismiles2: "CNCC(C1=CC(=C(C=C1)O)O)O" },
+{ drug: "Calcium Chloride Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Calcium Chloride", api_1: 110.98, apismiles1: "[Cl-].[Cl-].[Ca+2]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Cefdinir Oral Presentations", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Cefdinir", api_1: 395.4, apismiles1: "C=CC1=C(N2C(C(C2=O)NC(=O)C(=NO)C3=CSC(=N3)N)SC1)C(=O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Cefotaxime Sodium Injection", format: "Simple injection", availability: "Not enough", essential: "No", api_name1: "Cefotaxime Sodium", api_1: 477.5, apismiles1: "CC(=O)OCC1=C(N2C(C(C2=O)NC(=O)C(=NOC)C3=CSC(=N3)N)SC1)C(=O)[O-].[Na+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Ciprofloxacin Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Ciprofloxacin", api_1: 331.34, apismiles1: "C1CC1N2C=C(C(=O)C3=CC(=C(C=C32)N4CCNCC4)F)C(=O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Clonazepam Oral Tablets", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Clonazepam", api_1: 315.71, apismiles1: "C1C(=O)NC2=C(C=C(C=C2)[N+](=O)[O-])C(=N1)C3=CC=CC=C3Cl", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Conivaptan Hydrochloride Injection", format: "Simple injection", availability: "Nothing available", essential: "No", api_name1: "Conivaptan Hydrochloride", api_1: 535, apismiles1: "CC1=NC2=C(N1)CCN(C3=CC=CC=C32)C(=O)C4=CC=C(C=C4)NC(=O)C5=CC=CC=C5C6=CC=CC=C6.Cl", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Cromolyn Oral Solution", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Cromolyn", api_1: 468.4, apismiles1: "C1=CC2=C(C(=C1)OCC(COC3=CC=CC4=C3C(=O)C=C(O4)C(=O)O)O)C(=O)C=C(O2)C(=O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Dexmethylphenidate Extended Release Capsules", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Dexmethylphenidate", api_1: 233.31, apismiles1: "COC(=O)C(C1CCCCN1)C2=CC=CC=C2", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Dexrazoxane Hydrochloride Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Dexrazoxane Hydrochloride", api_1: 304.73, apismiles1: "CC(CN1CC(=O)NC(=O)C1)N2CC(=O)NC(=O)C2.Cl", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Dicloxacillin Sodium Capsules", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Dicloxacillin Sodium", api_1: 510.3, apismiles1: "CC1=C(C(=NO1)C2=C(C=CC=C2Cl)Cl)C(=O)NC3C4N(C3=O)C(C(S4)(C)C)C(=O)[O-].O.[Na+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Dicyclomine Oral Presentations", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Dicyclomine", api_1: 309.5, apismiles1: "CCN(CC)CCOC(=O)C1(CCCCC1)C2CCCCC2", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Diphenhydramine Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Diphenhydramine", api_1: 255.35, apismiles1: "CN(C)CCOC(C1=CC=CC=C1)C2=CC=CC=C2", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Dobutamine Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Dobutamine", api_1: 301.4, apismiles1: "CC(CCC1=CC=C(C=C1)O)NCCC2=CC(=C(C=C2)O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Dofetilide Capsules", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Dofetilide", api_1: 441.6, apismiles1: "CN(CCC1=CC=C(C=C1)NS(=O)(=O)C)CCOC2=CC=C(C=C2)NS(=O)(=O)C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Dopamine Hydrochloride Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Dopamine Hydrochloride", api_1: 189.64, apismiles1: "C1=CC(=C(C=C1CCN)O)O.Cl", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Doxercalciferol Capsules", format: "Simple capsules / tablets / powder", availability: "Nothing available", essential: "No", api_name1: "Doxercalciferol", api_1: 412.6, apismiles1: "CC(C)C(C)C=CC(C)C1CCC2C1(CCCC2=CC=C3CC(CC(C3=C)O)O)C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Epinephrine Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Epinephrine", api_1: 183.2, apismiles1: "CNCC(C1=CC(=C(C=C1)O)O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Etomidate Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Etomidate", api_1: 244.29, apismiles1: "CCOC(=O)C1=CN=CN1C(C)C2=CC=CC=C2", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Flumazenil Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Flumazenil", api_1: 303.29, apismiles1: "CCOC(=O)C1=C2CN(C(=O)C3=C(N2C=N1)C=CC(=C3)F)C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Fosphenytoin Sodium Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Fosphenytoin Sodium", api_1: 406.24, apismiles1: "C1=CC=C(C=C1)C2(C(=O)N(C(=O)N2)COP(=O)([O-])[O-])C3=CC=CC=C3.[Na+].[Na+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Gabapentin Oral Solution", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Gabapentin", api_1: 171.24, apismiles1: "C1CCC(CC1)(CC(=O)O)CN", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Guanfacine Hydrochloride Tablets", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Guanfacine Hydrochloride", api_1: 282.5, apismiles1: "C1=CC(=C(C(=C1)Cl)CC(=O)N=C(N)N)Cl.Cl", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Hydrocortisone Sodium Succinate Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Hydrocortisone Sodium Succinate", api_1: 484.5, apismiles1: "CC12CCC(=O)C=C1CCC3C2C(CC4(C3CCC4(C(=O)COC(=O)CCC(=O)[O-])O)C)O.[Na+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Hydroxyzine Pamoate Oral Capsules", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Hydroxyzine Pamoate", api_1: 763.3, apismiles1: "C1CN(CCN1CCOCCO)C(C2=CC=CC=C2)C3=CC=C(C=C3)Cl.C1=CC=C2C(=C1)C=C(C(=C2CC3=C(C(=CC4=CC=CC=C43)C(=O)O)O)O)C(=O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Iopamidol Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Iopamidol", api_1: 777.1, apismiles1: "CC(C(=O)NC1=C(C(=C(C(=C1I)C(=O)NC(CO)CO)I)C(=O)NC(CO)CO)I)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Iopromide Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Iopromide", api_1: 791.1, apismiles1: "CN(CC(CO)O)C(=O)C1=C(C(=C(C(=C1I)C(=O)NCC(CO)O)I)NC(=O)COC)I", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Iothalamate Meglumine 17.2%", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Iothalamate Meglumine", api_1: 809.1, apismiles1: "CC(=O)NC1=C(C(=C(C(=C1I)C(=O)O)I)C(=O)NC)I.CNCC(C(C(C(CO)O)O)O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Iothalamate Meglumine Injection", format: "Simple injection", availability: "Nothing available", essential: "No", api_name1: "Iothalamate Meglumine", api_1: 809.1, apismiles1: "CC(=O)NC1=C(C(=C(C(=C1I)C(=O)O)I)C(=O)NC)I.CNCC(C(C(C(CO)O)O)O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Ioversol Injection", format: "Simple injection", availability: "Not enough", essential: "No", api_name1: "Ioversol", api_1: 807.1, apismiles1: "C(CO)N(C1=C(C(=C(C(=C1I)C(=O)NCC(CO)O)I)C(=O)NCC(CO)O)I)C(=O)CO", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Irbesartan Tablets", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Irbesartan", api_1: 428.5, apismiles1: "CCCCC1=NC2(CCCC2)C(=O)N1CC3=CC=C(C=C3)C4=CC=CC=C4C5=NNN=N5", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Iron Sucrose Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Iron Sucrose", api_1: 0, apismiles1: "N/A", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Ketorolac Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Ketorolac", api_1: 255.27, apismiles1: "C1CN2C(=CC=C2C(=O)C3=CC=CC=C3)C1C(=O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Labetalol Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Labetalol", api_1: 328.4, apismiles1: "CC(CCC1=CC=CC=C1)NCC(C2=CC(=C(C=C2)O)C(=O)N)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Levetiracetam Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Levetiracetam", api_1: 170.21, apismiles1: "CCC(C(=O)N)N1CCCC1=O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Lisdexamfetamine Dimesylate Capsules", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Lisdexamfetamine Dimesylate", api_1: 455.6, apismiles1: "CC(CC1=CC=CC=C1)NC(=O)C(CCCCN)N.CS(=O)(=O)O.CS(=O)(=O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Lithium Oral Solution", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Lithium", api_1: 7, apismiles1: "[Li]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Magnesium Citrate Oral Solution", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Magnesium Citrate", api_1: 451.12, apismiles1: "C(C(=O)[O-])C(CC(=O)[O-])(C(=O)[O-])O.C(C(=O)[O-])C(CC(=O)[O-])(C(=O)[O-])O.[Mg+2].[Mg+2].[Mg+2]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Magnesium Sulfate Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Magnesium Sulfate", api_1: 120.37, apismiles1: "[O-]S(=O)(=O)[O-].[Mg+2]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Methylprednisolone Sodium Succinate Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Methylprednisolone Sodium Succinate", api_1: 496.5, apismiles1: "CC1CC2C3CCC(C3(CC(C2C4(C1=CC(=O)C=C4)C)O)C)(C(=O)COC(=O)CCC(=O)[O-])O.[Na+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Metronidazole Hydrochloride Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Metronidazole Hydrochloride", api_1: 207.61, apismiles1: "CC1=NC=C(N1CCO)[N+](=O)[O-].Cl", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Minoxidil 2.5 mg Tablets", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Minoxidil", api_1: 209.25, apismiles1: "C1CCN(CC1)C2=NC(=N)N(C(=C2)N)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Mycophenolate Sodium Delayed-Release Tablets", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Mycophenolate Sodium", api_1: 342.3, apismiles1: "CC1=C2COC(=O)C2=C(C(=C1OC)CC=C(C)CCC(=O)[O-])O.[Na+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Nafcillin Sodium Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Nafcillin Sodium", api_1: 436.5, apismiles1: "CCOC1=C(C2=CC=CC=C2C=C1)C(=O)NC3C4N(C3=O)C(C(S4)(C)C)C(=O)[O-].[Na+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Nitazoxanide Oral Presentations", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Nitazoxanide", api_1: 307.28, apismiles1: "CC(=O)OC1=CC=CC=C1C(=O)NC2=NC=C(S2)[N+](=O)[O-]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Oseltamivir Oral Suspension and Capsules", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Oseltamivir", api_1: 312.4, apismiles1: "CCC(CC)OC1C=C(CC(C1NC(=O)C)N)C(=O)OCC", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Pamidronate Disodium Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Pamidronate Disodium", api_1: 279.03, apismiles1: "C(CN)C(O)(P(=O)(O)[O-])P(=O)(O)[O-].[Na+].[Na+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Pantoprazole Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Pantoprazole", api_1: 383.4, apismiles1: "COC1=C(C(=NC=C1)CS(=O)C2=NC3=C(N2)C=C(C=C3)OC(F)F)OC", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Phenylephrine Ophthalmic Solution", format: "Solutions", availability: "Other presentation available", essential: "No", api_name1: "Phenylephrine", api_1: 167.2, apismiles1: "CNCC(C1=CC(=CC=C1)O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Potassium Acetate Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Potassium Acetate", api_1: 98.14, apismiles1: "CC(=O)[O-].[K+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Potassium Chloride Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Potassium Chloride", api_1: 74.55, apismiles1: "[Cl-].[K+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Potassium Iodide and Iodine (Lugol's Solution or Strong Iodine Solution) 14 mL bottles", format: "Simple capsules / tablets / powder", availability: "Not enough", essential: "No", api_name1: "Potassium Iodide", api_1: 166.0028, apismiles1: "[K+].[I-]", api_name2: "Iodine", api_2: 253.8089, apismiles2: "II" },
+{ drug: "Potassium Phosphate Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Potassium Phosphate", api_1: 212.266, apismiles1: "[O-]P(=O)([O-])[O-].[K+].[K+].[K+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Progesterone Capsules", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Progesterone", api_1: 314.5, apismiles1: "CC(=O)C1CCC2C1(CCC3C2CCC4=CC(=O)CCC34C)C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Promethazine Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Promethazine", api_1: 284.4, apismiles1: "CC(CN1C2=CC=CC=C2SC3=CC=CC=C31)N(C)C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Pyridoxine Hydrochloride Injection", format: "Simple injection", availability: "Nothing available", essential: "No", api_name1: "Pyridoxine Hydrochloride", api_1: 205.64, apismiles1: "CC1=NC=C(C(=C1O)CO)CO.Cl", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Quinapril Tablets", format: "Simple capsules / tablets / powder", availability: "Nothing available", essential: "No", api_name1: "Quinapril", api_1: 438.5, apismiles1: "CCOC(=O)C(CCC1=CC=CC=C1)NC(C)C(=O)N2CC3=CC=CC=C3CC2C(=O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Rifaximin Tablets", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Rifaximin", api_1: 785.9, apismiles1: "CC1C=CC=C(C(=O)NC2=C(C3=C(C4=C(C(=C3O)C)OC(C4=O)(OC=CC(C(C(C(C(C(C1O)C)O)C)OC(=O)C)C)OC)C)C5=C2N6C=CC(=CC6=N5)C)O)C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Rocuronium Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Rocuronium", api_1: 529.8, apismiles1: "CC(=O)OC1C(CC2C1(CCC3C2CCC4C3(CC(C(C4)O)N5CCOCC5)C)C)[N+]6(CCCC6)CC=C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Ropivacaine Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Ropivacaine", api_1: 274.4, apismiles1: "CCCN1CCCCC1C(=O)NC2=C(C=CC=C2C)C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Sodium Acetate Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Sodium Acetate", api_1: 82.03, apismiles1: "CC(=O)[O-].[Na+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Sodium Bicarbonate Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Sodium Bicarbonate", api_1: 84.007, apismiles1: "C(=O)(O)[O-].[Na+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Sodium Phosphate Injection", format: "Simple injection", availability: "Not enough", essential: "No", api_name1: "Sodium Phosphate", api_1: 117.961, apismiles1: "[O-]P(=O)([O-])[O-].[Na+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Streptozocin Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Streptozocin", api_1: 265.22, apismiles1: "CN(C(=O)NC1C(C(C(OC1O)CO)O)O)N=O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Sulfacetamide Sodium and Prednisolone Sodium Phosphate Ophthalmic Solution", format: "Solutions", availability: "Nothing available", essential: "No", api_name1: "Sulfacetamide Sodium", api_1: 254.24, apismiles1: "CC(=O)[N-]S(=O)(=O)C1=CC=C(C=C1)N.O.[Na+]", api_name2: "Prednisolone Sodium Phosphate", api_2: 484.4, apismiles2: "CC12CC(C3C(C1CCC2(C(=O)COP(=O)([O-])[O-])O)CCC4=CC(=O)C=CC34C)O.[Na+].[Na+]" },
+{ drug: "Testosterone Cypionate Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Testosterone Cypionate", api_1: 412.6, apismiles1: "CC12CCC3C(C1CCC2OC(=O)CCC4CCCC4)CCC5=CC(=O)CCC35C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Topotecan Capsules", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "No", api_name1: "Topotecan", api_1: 421.4, apismiles1: "CCC1(C2=C(COC1=O)C(=O)N3CC4=CC5=C(C=CC(=C5CN(C)C)O)N=C4C3=C2)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Triamcinolone Acetonide Intravitreal Injection", format: "Simple injection", availability: "Nothing available", essential: "No", api_name1: "Triamcinolone Acetonide", api_1: 434.5, apismiles1: "CC1(OC2CC3C4CCC5=CC(=O)C=CC5(C4(C(CC3(C2(O1)C(=O)CO)C)O)F)C)C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Vecuronium Bromide Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Vecuronium Bromide", api_1: 637.7, apismiles1: "CC(=O)OC1CC2CCC3C(C2(CC1N4CCCCC4)C)CCC5(C3CC(C5OC(=O)C)[N+]6(CCCCC6)C)C.[Br-]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Vitamin A Injection", format: "Simple injection", availability: "Not enough", essential: "No", api_name1: "Retinol", api_1: 286.5, apismiles1: "CC1=C(C(CCC1)(C)C)C=CC(=CC=CC(=CCO)C)C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Zoledronic Acid Injection", format: "Simple injection", availability: "Other presentation available", essential: "No", api_name1: "Zoledronic Acid", api_1: 272.09, apismiles1: "C1=CN(C=N1)CC(O)(P(=O)(O)O)P(=O)(O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Acetylcysteine Oral and Inhalation Solution", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "Yes", api_name1: "Acetylcysteine", api_1: 163.2, apismiles1: "CC(=O)NC(CS)C(=O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Acyclovir Injection", format: "Simple injection", availability: "Not enough", essential: "Yes", api_name1: "Acyclovir", api_1: 225.2, apismiles1: "C1=NC2=C(N1COCCO)N=C(NC2=O)N", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Amiodarone Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Amiodarone", api_1: 645.3, apismiles1: "CCCCC1=C(C2=CC=CC=C2O1)C(=O)C3=CC(=C(C(=C3)I)OCCN(CC)CC)I", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Ampicillin Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Ampicillin", api_1: 349.4, apismiles1: "CC1(C(N2C(S1)C(C2=O)NC(=O)C(C3=CC=CC=C3)N)C(=O)O)C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Atropine Sulfate Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Atropine", api_1: 289.4, apismiles1: "CN1C2CCC1CC(C2)OC(=O)C(CO)C3=CC=CC=C3", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Bumetanide Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Bumetanide", api_1: 364.4, apismiles1: "CCCCNC1=C(C(=CC(=C1)C(=O)O)S(=O)(=O)N)OC2=CC=CC=C2", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Bupivacaine Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Bupivacaine", api_1: 288.4, apismiles1: "CCCCN1CCCCC1C(=O)NC2=C(C=CC=C2C)C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Calcitriol Oral Solution", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "Yes", api_name1: "Calcitriol", api_1: 416.6, apismiles1: "CC(CCCC(C)(C)O)C1CCC2C1(CCCC2=CC=C3CC(CC(C3=C)O)O)C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Cefazolin Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Cefazolin", api_1: 454.5, apismiles1: "CC1=NN=C(S1)SCC2=C(N3C(C(C3=O)NC(=O)CN4C=NN=N4)SC2)C(=O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Chloramphenicol Sodium Succinate Injection", format: "Simple injection", availability: "Nothing available", essential: "Yes", api_name1: "Chloramphenicol Sodium Succinate", api_1: 445.2, apismiles1: "C1=CC(=CC=C1C(C(COC(=O)CCC(=O)[O-])NC(=O)C(Cl)Cl)O)[N+](=O)[O-].[Na+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Clindamycin Phosphate Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Clindamycin Phosphate", api_1: 505, apismiles1: "CCCC1CC(N(C1)C)C(=O)NC(C2C(C(C(C(O2)SC)OP(=O)(O)O)O)O)C(C)Cl", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Cyclopentolate Hydrochloride Ophthalmic Solution", format: "Solutions", availability: "Other presentation available", essential: "Yes", api_name1: "Cyclopentolate Hydrochloride", api_1: 327.8, apismiles1: "CN(C)CCOC(=O)C(C1=CC=CC=C1)C2(CCCC2)O.Cl", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Dacarbazine Injection", format: "Simple injection", availability: "Not enough", essential: "Yes", api_name1: "Dacarbazine", api_1: 182.18, apismiles1: "CN(C)N=NC1=C(NC=N1)C(=O)N", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Dexamethasone Sodium Phosphate Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Dexamethasone Sodium Phosphate", api_1: 516.4, apismiles1: "CC1CC2C3CCC4=CC(=O)C=CC4(C3(C(CC2(C1(C(=O)COP(=O)([O-])[O-])O)C)O)F)C.[Na+].[Na+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Diazepam Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Diazepam", api_1: 284.74, apismiles1: "CN1C(=O)CN=C(C2=C1C=CC(=C2)Cl)C3=CC=CC=C3", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Diazepam Oral Solution", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "Yes", api_name1: "Diazepam", api_1: 284.74, apismiles1: "CN1C(=O)CN=C(C2=C1C=CC(=C2)Cl)C3=CC=CC=C3", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Fluvoxamine Maleate Extended-Release Capsules", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "Yes", api_name1: "Fluvoxamine Maleate", api_1: 434.4, apismiles1: "COCCCCC(=NOCCN)C1=CC=C(C=C1)C(F)(F)F.C(=CC(=O)O)C(=O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Furosemide Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Furosemide", api_1: 330.74, apismiles1: "C1=COC(=C1)CNC2=CC(=C(C=C2C(=O)O)S(=O)(=O)N)Cl", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Gentamicin Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Gentamicin", api_1: 477.6, apismiles1: "CC(C1CCC(C(O1)OC2C(CC(C(C2O)OC3C(C(C(CO3)(C)O)NC)O)N)N)N)NC", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Granisetron Hydrochloride Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Granisetron Hydrochloride", api_1: 348.87, apismiles1: "Cl.CN1[C@H]2CCC[C@@H]1C[C@@H](C2)NC(=O)c3nn(C)c4ccccc34", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Haloperidol Lactate Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Haloperidol Lactate", api_1: 465.9, apismiles1: "CC(C(=O)O)O.C1CN(CCC1(C2=CC=C(C=C2)Cl)O)CCCC(=O)C3=CC=C(C=C3)F", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Heparin Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Sodium Heparin", api_1: 1039.9, apismiles1: "CC(=O)NC1C(C(C(OC1OC2C(C(C(OC2C(=O)O)OC3C(C(C(OC3O)OC4C(C(C(OC4C(=O)O)O)OS(=O)(=O)O)O)OS(=O)(=O)O)CS(=O)(=O)O)O)O)COS(=O)(=O)O)O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Heparin Sodium Premixed Bags", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Sodium Heparin", api_1: 1039.9, apismiles1: "CC(=O)NC1C(C(C(OC1OC2C(C(C(OC2C(=O)O)OC3C(C(C(OC3O)OC4C(C(C(OC4C(=O)O)O)OS(=O)(=O)O)O)OS(=O)(=O)O)CS(=O)(=O)O)O)O)COS(=O)(=O)O)O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Hydroxocobalamin Solution for Intramuscular Injection", format: "Simple injection", availability: "Nothing available", essential: "Yes", api_name1: "Hydroxocobalamin", api_1: 1346.4, apismiles1: "CC1=CC2=C(C=C1C)N(C=N2)C3C(C(C(O3)CO)OP(=O)([O-])OC(C)CNC(=O)CCC4(C(C5C6(C(C(C(=N6)C(=C7C(C(C(=N7)C=C8C(C(C(=N8)C(=C4[N-]5)C)CCC(=O)N)(C)C)CCC(=O)N)(C)CC(=O)N)C)CCC(=O)N)(C)CC(=O)N)C)CC(=O)N)C)O.[OH-].[Co+3]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Isoniazid Injection", format: "Simple injection", availability: "Nothing available", essential: "Yes", api_name1: "Isoniazid", api_1: 137.14, apismiles1: "C1=CN=CC=C1C(=O)NN", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Isoniazid Tablets", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "Yes", api_name1: "Isoniazid", api_1: 137.14, apismiles1: "C1=CN=CC=C1C(=O)NN", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Leucovorin Calcium Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Leucovorin Calcium", api_1: 511.5, apismiles1: "C1C(N(C2=C(N1)N=C(NC2=O)N)C=O)CNC3=CC=C(C=C3)C(=O)NC(CCC(=O)[O-])C(=O)[O-].[Ca+2]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Levofloxacin Oral Solution", format: "Simple capsules / tablets / powder", availability: "Nothing available", essential: "Yes", api_name1: "Levofloxacin", api_1: 361.4, apismiles1: "CC1COC2=C3N1C=C(C(=O)C3=CC(=C2N4CCN(CC4)C)F)C(=O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Levoleucovorin Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Levoleucovorin", api_1: 473.4, apismiles1: "C1C(N(C2=C(N1)N=C(NC2=O)N)C=O)CNC3=CC=C(C=C3)C(=O)NC(CCC(=O)O)C(=O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Levothyroxine Sodium Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Levothyroxine Sodium", api_1: 888.93, apismiles1: "C1=C(C=C(C(=C1I)OC2=CC(=C(C(=C2)I)O)I)I)CC(C(=O)[O-])N.O.O.O.O.O.[Na+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Lidocaine Hydrochloride Oral Topical Solution (Viscous) 2%", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "Yes", api_name1: "Lidocaine Hydrochloride", api_1: 270.8, apismiles1: "CCN(CC)CC(=O)NC1=C(C=CC=C1C)C.Cl", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Lidocaine Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Lidocaine", api_1: 234.34, apismiles1: "CCN(CC)CC(=O)NC1=C(C=CC=C1C)C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Lidocaine with Epinephrine Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Lidocaine", api_1: 234.34, apismiles1: "CCN(CC)CC(=O)NC1=C(C=CC=C1C)C", api_name2: "Epinephrine", api_2: 183.2, apismiles2: "CNCC(C1=CC(=C(C=C1)O)O)O" },
+{ drug: "Lorazepam Injection", format: "Simple injection", availability: "Not enough", essential: "Yes", api_name1: "Lorazepam", api_1: 321.2, apismiles1: "C1=CC=C(C(=C1)C2=NC(C(=O)NC3=C2C=C(C=C3)Cl)O)Cl", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Lorazepam Tablets", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "Yes", api_name1: "Lorazepam", api_1: 321.2, apismiles1: "C1=CC=C(C(=C1)C2=NC(C(=O)NC3=C2C=C(C=C3)Cl)O)Cl", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Losartan and Hydrochlorothiazide Tablets", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "Yes", api_name1: "Losartan", api_1: 422.9, apismiles1: "CCCCC1=NC(=C(N1CC2=CC=C(C=C2)C3=CC=CC=C3C4=NNN=N4)CO)Cl", api_name2: "Hydrochlorothiazide", api_2: 297.7, apismiles2: "C1NC2=CC(=C(C=C2S(=O)(=O)N1)S(=O)(=O)N)Cl" },
+{ drug: "Mesna Injection", format: "Simple injection", availability: "Not enough", essential: "Yes", api_name1: "Mesna", api_1: 164.18, apismiles1: "C(CS(=O)(=O)[O-])S.[Na+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Metoprolol Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Metoprolol", api_1: 267.36, apismiles1: "CC(C)NCC(COC1=CC=C(C=C1)CCOC)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Midazolam Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Midazolam", api_1: 325.8, apismiles1: "CC1=NC=C2N1C3=C(C=C(C=C3)Cl)C(=NC2)C4=CC=CC=C4F", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Moxifloxacin Tablets", format: "Simple capsules / tablets / powder", availability: "Not enough", essential: "Yes", api_name1: "Moxifloxacin", api_1: 401.4, apismiles1: "COC1=C2C(=CC(=C1N3CC4CCCNC4C3)F)C(=O)C(=CN2C5CC5)C(=O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Naltrexone Tablets", format: "Simple capsules / tablets / powder", availability: "Not enough", essential: "Yes", api_name1: "Naltrexone", api_1: 341.4, apismiles1: "C1CC1CN2CCC34C5C(=O)CCC3(C2CC6=C4C(=C(C=C6)O)O5)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Nitrofurantoin Oral Suspension", format: "Solutions", availability: "Other presentation available", essential: "Yes", api_name1: "Nitrofurantoin", api_1: 238.16, apismiles1: "C1C(=O)NC(=O)N1N=CC2=CC=C(O2)[N+](=O)[O-]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Ofloxacin Ophthalmic Solution", format: "Solutions", availability: "Other presentation available", essential: "Yes", api_name1: "Ofloxacin", api_1: 361.4, apismiles1: "CC1COC2=C3N1C=C(C(=O)C3=CC(=C2N4CCN(CC4)C)F)C(=O)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Olanzapine Intramuscular Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Olanzapine", api_1: 312.4, apismiles1: "CC1=CC2=C(S1)NC3=CC=CC=C3N=C2N4CCN(CC4)C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Ondansetron Hydrochloride Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Ondansetron Hydrochloride", api_1: 329.8, apismiles1: "CC1=NC=CN1CC2CCC3=C(C2=O)C4=CC=CC=C4N3C.Cl", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Penicillin G Benzathine", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Penicillin G Benzathine", api_1: 981.2, apismiles1: "CC1(C(N2C(S1)C(C2=O)NC(=O)CC3=CC=CC=C3)C(=O)O)C.CC1(C(N2C(S1)C(C2=O)NC(=O)CC3=CC=CC=C3)C(=O)O)C.C1=CC=C(C=C1)CNCCNCC2=CC=CC=C2.O.O.O.O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Penicillin G Benzathine / Penicillin G Procaine", format: "Simple injection", availability: "Not enough", essential: "Yes", api_name1: "Penicillin G Benzathine", api_1: 981.2, apismiles1: "CC1(C(N2C(S1)C(C2=O)NC(=O)CC3=CC=CC=C3)C(=O)O)C.CC1(C(N2C(S1)C(C2=O)NC(=O)CC3=CC=CC=C3)C(=O)O)C.C1=CC=C(C=C1)CNCCNCC2=CC=CC=C2.O.O.O.O", api_name2: "Penicillin G", api_2: 334.4, apismiles2: "CC1(C(N2C(S1)C(C2=O)NC(=O)CC3=CC=CC=C3)C(=O)O)C" },
+{ drug: "Penicillin V Potassium Oral Presentations", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "Yes", api_name1: "Penicillin V Potassium", api_1: 388.5, apismiles1: "CC1(C(N2C(S1)C(C2=O)NC(=O)COC3=CC=CC=C3)C(=O)[O-])C.[K+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Phenytoin Sodium Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Phenytoin Sodium", api_1: 274.25, apismiles1: "C1=CC=C(C=C1)C2(C(=O)[N-]C(=O)N2)C3=CC=CC=C3.[Na+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Prednisone Oral Tablets", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "Yes", api_name1: "Prednisone", api_1: 358.4, apismiles1: "CC12CC(=O)C3C(C1CCC2(C(=O)CO)O)CCC4=CC(=O)C=CC34C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Propofol Emulsion Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Propofol", api_1: 178.27, apismiles1: "CC(C)C1=C(C(=CC=C1)C(C)C)O", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Propranolol Hydrochloride Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Propranolol Hydrochloride", api_1: 295.8, apismiles1: "CC(C)NCC(COC1=CC=CC2=CC=CC=C21)O.Cl", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Succinylcholine Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Succinylcholine", api_1: 290.4, apismiles1: "C[N+](C)(C)CCOC(=O)CCC(=O)OCC[N+](C)(C)C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Tretinoin Capsules", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "Yes", api_name1: "Tretinoin", api_1: 300.4, apismiles1: "CC1=C(C(CCC1)(C)C)C=CC(=CC=CC(=CC(=O)O)C)C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Triamcinolone Hexacetonide Injection", format: "Simple injection", availability: "Nothing available", essential: "Yes", api_name1: "Triamcinolone Hexacetonide", api_1: 532.6, apismiles1: "CC1(OC2CC3C4CCC5=CC(=O)C=CC5(C4(C(CC3(C2(O1)C(=O)COC(=O)CC(C)(C)C)C)O)F)C)C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Tropicamide Ophthalmic Solution", format: "Solutions", availability: "Other presentation available", essential: "Yes", api_name1: "Tropicamide", api_1: 284.35, apismiles1: "CCN(CC1=CC=NC=C1)C(=O)C(CO)C2=CC=CC=C2", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Valganciclovir Oral Presentations", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "Yes", api_name1: "Valganciclovir", api_1: 354.36, apismiles1: "CC(C)C(C(=O)OCC(CO)OCN1C=NC2=C1N=C(NC2=O)N)N", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Valproate Sodium Injection", format: "Simple injection", availability: "Other presentation available", essential: "Yes", api_name1: "Valproate Sodium", api_1: 166.19, apismiles1: "CCCC(CCC)C(=O)[O-].[Na+]", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Varenicline tablets (Chantix)", format: "Simple capsules / tablets / powder", availability: "Nothing available", essential: "Yes", api_name1: "Varenicline", api_1: 211.26, apismiles1: "C1C2CNCC1C3=CC4=NC=CN=C4C=C23", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Amoxicillin and Clavulanate Oral Presentations", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "Yes", api_name1: "Amoxicillin", api_1: 365.4, apismiles1: "CC1(C(N2C(S1)C(C2=O)NC(=O)C(C3=CC=C(C=C3)O)N)C(=O)O)C", api_name2: "Clavulanate", api_2: 199.16, apismiles2: "C1C2N(C1=O)C(C(=CCO)O2)C(=O)O" },
+{ drug: "Amoxicillin Oral Presentations", format: "Simple capsules / tablets / powder", availability: "Other presentation available", essential: "Yes", api_name1: "Amoxicillin", api_1: 365.4, apismiles1: "CC1(C(N2C(S1)C(C2=O)NC(=O)C(C3=CC=C(C=C3)O)N)C(=O)O)C", api_name2: "", api_2: 0.0, apismiles2: "" },
+{ drug: "Fluorescein Sodium and Proparacaine Hydrochloride Ophthalmic Solution", format: "Solutions", availability: "Nothing available", essential: "Yes", api_name1: "Fluorescein Sodium", api_1: 376.3, apismiles1: "C1=CC=C(C(=C1)C2=C3C=CC(=O)C=C3OC4=C2C=CC(=C4)[O-])C(=O)[O-].[Na+].[Na+]", api_name2: "Proparacaine Hydrochloride", api_2: 330.8, apismiles2: "CCCOC1=C(C=C(C=C1)C(=O)OCCN(CC)CC)N.Cl" },
+{ drug: "Neomycin and Polymyxin B Sulfates Genitourinary Irrigant", format: "Solutions", availability: "Nothing available", essential: "Yes", api_name1: "Neomycin", api_1: 0, apismiles1: "N/A", api_name2: "Polymyxin B Sulfates", api_2: 0, apismiles2: "N/A" },
+    ];
+    let filteredTableRows = tableRows;
+
+    function populateTable(data) {
+  //    document.getElementById('current-status').innerHTML="Populating table " + (new Date()).getTime();
+
+      let tableContent = "";
+      for (let row of data) {
+
+        tableContent += "<div class='tile'>";
+        tableContent += `<p><B>${row.drug}</B>`;
+        if (`${row.essential}`=="Yes") {
+          tableContent += "&nbsp;<FONT COLOR=#FF8000>&#9733;</FONT>"
+        }
+        tableContent += `</p>`;
+        tableContent += `<p class='small'>Format: <B>${row.format}</B></P>`;
+        tableContent += `<p class='small'>Availability: <B>${row.availability}</B></P>`;
+        if (`${row.api_name1}`!="" && `${row.api_name1}`!="N/A") {
+	     tableContent += `<FONT size=2em COLOR=blue><B>${row.api_name1}</B></FONT>`;
+             if (`${row.api_1}` != 0) {
+               tableContent += ' <font size=1.0em>(MW: ' + `${row.api_1}` + ')</font>';
+             }
+             if (`${row.apismiles1}`!="" && `${row.apismiles1}`!="N/A") {
+//	     tableContent += '<BR>&nbsp;&nbsp;<IMG SRC="http://hulab.rxnfinder.org/smi2img/' + encodeURIComponent(`${row.apismiles1}`) + '\/\" width=200 height=200>';
+	       tableContent += '<BR>&nbsp;&nbsp;<IMG SRC="https://cactus.nci.nih.gov/chemical/structure/' + `${row.apismiles1}` + '/image" width=200 height=200>';
+             }
+        }
+        if (`${row.api_name2}`!="" && `${row.api_name2}`!="N/A") {
+	     tableContent += `<BR><FONT size=2em COLOR=blue><B>${row.api_name2}</B></FONT>`;
+             if (`${row.api_2}`!=0) {
+               tableContent += ' <font size=1.0em>(MW: ' + `${row.api_2}` + ')</font>';
+             }
+             if (`${row.apismiles2}`!="" && `${row.apismiles2}`!="N/A") {
+//	     tableContent += '<BR>&nbsp;&nbsp;<IMG SRC="http://hulab.rxnfinder.org/smi2img/' + encodeURIComponent(`${row.apismiles2}`) + '\/\" width=200 height=200>';
+	       tableContent += '<BR>&nbsp;&nbsp;<IMG SRC="https://cactus.nci.nih.gov/chemical/structure/' + `${row.apismiles2}` + '/image" width=200 height=200>';
+	     }
+        }
+        tableContent += "</div>";
+      }
+      tableBody.innerHTML = tableContent;
+//document.getElementById('table-body').innerHTML = tableContent;
+//document.getElementById('current-status').innerHTML="Done populating table " + (new Date()).getTime() + " first Row: " + data[0]["drug"];
+
+//      document.getElementById('current-status').innerHTML = data.length + " drugs";
+
+
+    }
+
+    function populateFilterOptions() {
+//      const unique_drug = [...new Set(tableRows.map(row => row.drug))];
+      const unique_drug = [...new Set(filteredTableRows.map(row => row.drug))];
+      const select_drug = document.getElementById('filter-drug');
+      select_drug.innerHTML = '<option value="">All</option>' + unique_drug.map(drug => `<option value="${drug}">${drug}</option>`).join('');
+
+//      const unique_format = [...new Set(tableRows.map(row => row.format))];
+      const unique_format = [...new Set(filteredTableRows.map(row => row.format))];
+      const select_format = document.getElementById('filter-format');
+      select_format.innerHTML = '<option value="">All</option>' + unique_format.map(format => `<option value="${format}">${format}</option>`).join('');
+
+//      const unique_availability = [...new Set(tableRows.map(row => row.availability))];
+      const unique_availability = [...new Set(filteredTableRows.map(row => row.availability))];
+      const select_availability = document.getElementById('filter-availability');
+      select_availability.innerHTML = '<option value="">All</option>' + unique_availability.map(availability => `<option value="${availability}">${availability}</option>`).join('');
+
+//      const unique_essential = [...new Set(tableRows.map(row => row.essential))];
+      const unique_essential = [...new Set(filteredTableRows.map(row => row.essential))];
+      const select_essential = document.getElementById('filter-essential');
+      select_essential.innerHTML = '<option value="">All</option>' + unique_essential.map(essential => `<option value="${essential}">${essential}</option>`).join('');
+    }
+    
+    const tableHeaders = document.querySelectorAll('[data-name^="parameter"]'); //('th:not(:last-child)');
+//    const tableHeaders = document.querySelectorAll('th'); //('th:not(:last-child)');
+    tableHeaders.forEach(header => {
+      let sortBy = header.getAttribute('data-name').substring(10,100);
+      // header.innerHTML; //.toLowerCase().trim();
+      //sortBy = sortBy.substring(0,sortBy.indexOf("<br>")).toLowerCase().trim();
+      
+      var SortAscBbutton = document.createElement("button");
+      SortAscBbutton.data = sortBy;
+      SortAscBbutton.innerHTML = '&#x25B2';
+      SortAscBbutton.onclick = function() {        
+        sortTable(this.data, "asc");
+      };
+      header.appendChild(SortAscBbutton);
+      var SortDesBbutton = document.createElement("button");
+      SortDesBbutton.data = sortBy;
+      SortDesBbutton.innerHTML = '&#x25BC';
+      SortDesBbutton.onclick = function() {
+        sortTable(this.data, "desc");
+      };
+      header.appendChild(SortDesBbutton);
+    });
+
+    function sortTable(column, sortOrder) {
+      if (!sortOrder) return; // No sorting selected
+//      const sortedData = filteredTableRows.slice().sort((a, b) => {
+      const sortedData = tableRows.slice().sort((a, b) => {
+        const sortValueA = a[column];
+        const sortValueB = b[column];
+        if (sortValueA < sortValueB) {
+          return sortOrder === 'asc' ? -1 : 1;
+        } else if (sortValueA > sortValueB) {
+          return sortOrder === 'asc' ? 1 : -1;
+        } else {
+          return 0;
+        }
+      });
+      tableRows = sortedData;
+
+      populateTable(filterData());
+    }
+
+    function filterData() {
+        const filters = {
+          drug: document.getElementById('filter-drug').options,
+          format: document.getElementById('filter-format').options,
+          availability: document.getElementById('filter-availability').options,
+          essential: document.getElementById('filter-essential').options,
+        };
+    document.getElementById('current-status').innerHTML="FILTERS: " + NumSelectedOptions(filters['drug']) + " | " + NumSelectedOptions(filters['format']) + " | " + NumSelectedOptions(filters['availability']) + " | " + NumSelectedOptions(filters['essential']);
+
+      filteredTableRows = tableRows.filter(row => {
+        let keepRow = true;
+        for (const filter in filters) {
+          if (keepRow == false) { break; }
+          if (filters[filter] && NumSelectedOptions(filters[filter])>0 ) {
+            let keepRowForThisFilter = false;
+            for (var i=0; i<filters[filter].length; i++) {
+              if (filters[filter][i].selected && (filters[filter][i].label == 'All' || filters[filter][i].label == row[filter])) {
+                keepRowForThisFilter = true;
+                break;
+              }
+            }
+            if (keepRowForThisFilter == false) keepRow=false;
+          } else {
+            keepRow = true;
+          }
+	}
+        return keepRow;
+      });
+      document.getElementById('current-status').innerHTML= filteredTableRows.length + " entries";
+//      populateFilterOptions();
+//    document.getElementById('current-status').innerHTML="DONE FILTERS";
+
+      return filteredTableRows;
+     // populateTable(filteredTableRows);
+    }
+
+    //const filterSelects = filterOptions.querySelectorAll('select');
+    const filterSelects = document.querySelectorAll('[id^=filter-]');
+
+    //const filterSelects = document.querySelectorAll('select');
+    //document.getElementById('table-body').innerHTML = "Filtering select -> " + filterSelects.length;
+            
+    filterSelects.forEach(select => {
+      select.addEventListener('change', function() {
+        populateTable(filterData());
+      });
+    });
+
+    function NumSelectedOptions(el) {
+      var cnt = 0;
+      for (var i = 0; i < el.length; i++) {
+        if (el[i].selected) cnt++;
+      }
+      return cnt;
+    }
+
+    populateFilterOptions();
+    populateTable(tableRows);
+
+  </script>
+</body>
+</html>
